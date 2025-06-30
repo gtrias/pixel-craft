@@ -1,0 +1,166 @@
+# Product Requirements Document – **Pixel‑Artify**
+
+| **Version** | 1.0                                 |
+| ----------- | ----------------------------------- |
+| **Author**  | ChatGPT (draft)                     |
+| **Date**    | 2025‑06‑26                          |
+| **Status**  | Draft – awaiting stakeholder review |
+
+---
+
+## 1 · Purpose & Overview
+
+Convert any full‑color raster image into a crisp, perceptually faithful *pixel‑art* rendition that fits an **arbitrary, limited palette** (≤256 colours). The system relies on **Joel Yliluoma's positional dithering (Algs 1 & 4)** combined with resolution down‑sampling and optional nearest‑neighbour upscale.
+
+### Key Value
+
+* Retro‑style game assets without shimmer artifacts.
+* Consistent visuals on low‑colour displays (e‑ink, LED matrices, embedded GUIs).
+* Size‑efficient web imagery that still looks hand‑crafted.
+
+## 2 · Problem Statement
+
+Existing ordered‑dither techniques (Bayer, Sierra, etc.) assume uniform RGB palettes; error‑diffusion introduces temporal noise; and mainstream tools lack palette‑aware ordered dithering. Teams waste hours manually tweaking sprites or settling for sub‑optimal conversions.
+
+## 3 · Goals & Non‑Goals
+
+| **Goals**                                                     | **Non‑Goals**                        |
+| ------------------------------------------------------------- | ------------------------------------ |
+| Per‑image conversion via CLI/API                              | GUI front‑end (could be future work) |
+| Support arbitrary palettes (built‑in, external, or extracted) | Vector/SVG output                    |
+| Deterministic, flicker‑free results                           | Real‑time video pipeline             |
+| Cross‑platform (macOS, Linux, Windows)                        | Mobile app                           |
+
+## 4 · Personas & User Stories
+
+1. **Indie Pixel‑Art Dev (Alex)** – *"I want to batch‑convert concept art into my NES‑style palette so I can focus on gameplay."*
+2. **Embedded Engineer (Sam)** – *"I need status icons that map to my e‑ink device's 16‑colour palette without artifacts."*
+3. **Web Perf Lead (Jamie)** – *"I want hero images under 50 KB but still on brand using our 32‑colour design palette."*
+
+### Representative Stories
+
+| ID | User Story                                                                                        | Priority |
+| -- | ------------------------------------------------------------------------------------------------- | -------- |
+| U1 | As Alex, I can run `pixel-artify *.png --palette nes` and get palette‑correct sprites in `/out`.  | P0       |
+| U2 | As Sam, I can supply a custom `.ase` palette file.                                                | P0       |
+| U3 | As Jamie, I can downscale by exact pixel grid (`--pixel-size 160x90`) and upscale 4× for preview. | P1       |
+
+## 5 · Functional Requirements
+
+### 5.1 CLI
+
+* **Command:** `pixel-artify <input> <output>`
+* **Global flags** (long + short aliases):
+
+  * `--palette, -p` ⟶ predefined name | path | `extract` | `kmeans::<N>`
+  * `--alg, -a` ⟶ `yl1`, `yl4` *(default yl4)*
+  * `--pixel-size, -s` ⟶ `WxH` | fractional scale
+  * `--output-scale` ⟶ integer nearest‑neighbour upscale (for inspection)
+  * `--gamma` ⟶ float (default 2.2)
+  * `--reject-contrast` ⟶ ΔE2000 threshold (default 45)
+  * `--format` ⟶ `png`, `gif`, `jpeg`
+  * `--batch` ⟶ glob pattern support
+
+### 5.2 Image Pipeline
+
+1. **Load & linearize RGB** (16‑bit per channel).
+2. **Downscale** to target pixel grid (Lanczos3; timing‑variant ignored).
+3. **Palette acquisition** (see §5.3).
+4. **Pre‑compute 2‑colour blends** (Alg 4) · gamma corrected.
+5. **Dithering** via 8×8 threshold matrix:
+
+   * For each pixel choose best candidate pair & ratio.
+6. **Optional upscale** (nearest) for preview.
+7. **Encode** & write.
+
+### 5.3 Palette Management
+
+| Mode              | Behaviour                           |
+| ----------------- | ----------------------------------- |
+| **Built‑in**      | `nes`, `gameboy`, `pico8`, `cga`, … |
+| **External file** | `.ase`, `.gpl`, `.csv`              |
+| **Extract**       | Median‑cut (libimagequant)          |
+| **K‑means**       | `kmeans::<N>` clusters in LAB       |
+
+### 5.4 Output
+
+* Always embed palette indices (for PNG‑8/GIF).
+* Preserve transparency if original alpha channel present.
+
+## 6 · Non‑Functional Requirements
+
+| Category        | Requirement                                                    |
+| --------------- | -------------------------------------------------------------- |
+| **Performance** | <400 ms for 1920×1080 → 320×180, 64‑colour palette, on M1 Pro. |
+| **Determinism** | Same input + flags ⇒ identical bytes.                          |
+| **Portability** | Node ≥ 18; native deps pre‑built for x64 & arm64.              |
+| **Quality**     | ΔE2000 average error ≤ 12 on reference suite.                  |
+| **CLI UX**      | ≥ 95 % branch test coverage; helpful `--help`.                 |
+
+## 7 · Technical Constraints & Stack
+
+* **Language:** TypeScript (ESM).
+  Rationale: modern syntax, distributable as npx.
+* **Core deps:** `sharp`, `colorjs.io`, `commander`, `chalk`.
+* **Optional optimisation:** Rust+WASM module for hot path (ΔE2000 & pair‐search).
+* **Filesystem layout**
+
+  ```text
+  src/
+   ├ palettes.ts  // built‑ins & loader
+   ├ ylooma.ts    // Alg1/4 core
+   ├ deltaE.ts    // ΔE2000
+   ├ index.ts     // CLI entry
+   └ types.d.ts
+  ```
+
+## 8 · Performance Guidelines
+
+* **Worker threads**: shard rows in 64‑row stripes.
+* **Cache**: LRU map `blendKey -> candidate list`.
+* **SIMD**: use Wasm `simd128` where available.
+
+## 9 · Success Metrics
+
+| Metric                                                   | Target |
+| -------------------------------------------------------- | ------ |
+| GitHub stars (90 d)                                      | ≥ 300  |
+| Avg ΔE2000 error vs Photoshop pattern dithering          | −30 %  |
+| Conversion speed vs ImageMagick `-dither FloydSteinberg` | ≥ 1.5× |
+
+## 10 · Acceptance Criteria / Test Plan
+
+1. **Golden images** (10 fixtures) produce bit‑exact PNGs.
+2. **Palette file round‑trip**: load, apply, re‑export.
+3. **Invalid params** return exit code 1 with usage hint.
+4. **CI matrix**: macOS, Ubuntu, Windows.
+5. **Benchmarks** auto‑fail PR if runtime regression >10 %.
+
+## 11 · Milestones & Timeline (T‑biweekly)
+
+| Sprint | Deliverable                               |
+| ------ | ----------------------------------------- |
+| 0      | Project skeleton, CI, palette loader      |
+| 1      | Core RGB→LAB, ΔE2000, downscale module    |
+| 2      | Yliluoma Alg 4 prototype, CLI flags draft |
+| 3      | Palette blends pre‑compute, basic tests   |
+| 4      | Performance pass: threading + cache       |
+| 5      | Docs, samples, 1.0‑beta tag               |
+
+## 12 · Risks & Mitigations
+
+| Risk                            | Impact | Mitigation                              |
+| ------------------------------- | ------ | --------------------------------------- |
+| WASM build issues on Windows    | Medium | Provide pure‑TS fallback                |
+| `sharp` breaking changes        | Low    | Pin minor version; renovate bot         |
+| Large palettes slow pair search | High   | Cap to 256; pre‑filter by L\* proximity |
+
+## 13 · Open Questions
+
+1. Support animated GIF input/output? *(Deferred)*
+2. Provide undoable Photoshop plugin? *(Future)*
+
+## 14 · References
+
+* J. Yliluoma — *Arbitrary‑palette positional dithering* (2010‑2024).
+* mieki256 — Python proof‑of‑concept gists.

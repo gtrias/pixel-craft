@@ -1,0 +1,205 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-light: #ffffff;
+  --color-dark: #171717;
+}
+
+.accent-text {
+  @apply text-slate-600;
+}
+
+body {
+  font-family:
+    "Inter Variable",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+  color: var(--color-dark);
+  background: var(--color-light);
+}
+
+/* Retro pixel font */
+.pixel-font {
+  font-family: 'Press Start 2P', monospace;
+  line-height: 1.6;
+}
+
+/* Pixel-perfect borders */
+.pixel-border {
+  border-style: solid;
+  image-rendering: pixelated;
+}
+
+/* Retro shadow effect */
+.retro-shadow {
+  text-shadow: 2px 2px 0px #92400e;
+}
+
+/* Grid pattern background */
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(146, 64, 14, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(146, 64, 14, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Vintage scanlines */
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    transparent 50%,
+    rgba(146, 64, 14, 0.03) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Retro loader */
+.retro-loader {
+  text-align: center;
+}
+
+.loader-text {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  animation: blink 1s infinite;
+}
+
+.loader-bar {
+  width: 200px;
+  height: 20px;
+  border: 3px solid #92400e;
+  background: #fbbf24;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.loader-fill {
+  height: 100%;
+  background: #92400e;
+  width: 0%;
+  animation: loading 2s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes loading {
+  0% { width: 0%; }
+  50% { width: 100%; }
+  100% { width: 0%; }
+}
+
+/* Retro spinner */
+.retro-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #fbbf24;
+  border-top: 4px solid #92400e;
+  margin: 0 auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Retro slider */
+.retro-slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  background: #92400e;
+  border: 2px solid #451a03;
+  cursor: pointer;
+}
+
+.retro-slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  background: #92400e;
+  border: 2px solid #451a03;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+/* Retro button effects */
+.retro-button {
+  position: relative;
+  transform: translateY(0);
+  box-shadow: 0 2px 0 #451a03;
+}
+
+.retro-button:hover {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #451a03;
+}
+
+.retro-button:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+/* Retro card hover effect */
+.retro-card {
+  transition: transform 0.2s ease;
+}
+
+.retro-card:hover {
+  transform: translateY(-1px);
+}
+
+/* Visual transformation demo styles */
+.smooth-image {
+  border-radius: 8px;
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+}
+
+.pixelated-demo {
+  border-radius: 0;
+  background: linear-gradient(45deg, #92400e, #451a03);
+  image-rendering: pixelated;
+}
+
+/* Custom border width */
+.border-3 {
+  border-width: 3px;
+}
+
+/* only use this to update the style of the auth input fields. use a different class for all other input fields */
+.auth-input-field {
+  @apply w-full px-4 py-3 bg-amber-50 border-3 border-amber-800 focus:border-orange-600 focus:bg-amber-100 outline-none transition-colors pixel-font text-amber-900 placeholder-amber-600;
+  font-size: 12px;
+}
+
+/* only use this to update the style of the auth buttons. use the button class for all other buttons */
+.auth-button {
+  @apply w-full px-6 py-3 bg-amber-800 text-amber-100 pixel-font border-2 border-amber-900 hover:bg-amber-700 transition-colors retro-button disabled:opacity-50 disabled:cursor-not-allowed;
+  font-size: 12px;
+}
