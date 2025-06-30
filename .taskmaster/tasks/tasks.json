@@ -1,0 +1,205 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Repository and Dependencies",
+        "description": "Initialize the project structure and install required dependencies for image processing and CLI functionality",
+        "details": "Create project directory structure with src/, tests/, examples/ folders. Initialize package.json/requirements.txt. Install image processing libraries (PIL/Pillow for Python or sharp/jimp for Node.js). Add CLI framework (argparse for Python or commander for Node.js). Setup basic project configuration files (.gitignore, README.md).",
+        "testStrategy": "Verify project structure exists, dependencies install correctly, and basic imports work without errors",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement Image I/O Module",
+        "description": "Create module to handle loading and saving images in PNG and JPEG formats",
+        "details": "Implement functions: loadImage(filepath) -> RGB array, saveImage(rgbArray, filepath, format). Support PNG and JPEG formats. Handle common image formats and convert to consistent RGB representation. Include error handling for invalid files or unsupported formats. Return images as 3D arrays (height, width, RGB channels).",
+        "testStrategy": "Test loading various PNG/JPEG files, verify RGB values are correct, test saving images and confirm they can be reopened, test error handling with invalid files",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Implement Palette Input and Validation",
+        "description": "Create module to handle user-defined RGB palette input and validation, building upon the existing hardcoded PICO-8 palette implementation",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "high",
+        "details": "Currently has hardcoded PICO-8 palette for color quantization. Need to add: loadPalette(paletteData) function to accept RGB array from JSON file or direct input, validatePalette(palette) function to ensure RGB values are 0-255 range, support for additional example palettes (NES, Game Boy, etc.), error handling for malformed palette data, and user interface for palette selection/input.",
+        "testStrategy": "Test palette loading from JSON files and direct array input, validate RGB range checking (0-255), test with various palette sizes, verify error handling for malformed palette data, test integration with existing PICO-8 palette quantization, verify palette switching functionality",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement validatePalette function",
+            "description": "Create function to validate RGB palette data ensuring values are in 0-255 range",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement loadPalette function",
+            "description": "Create function to load palette from JSON file or direct array input, with error handling",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Add example palette collections",
+            "description": "Create predefined palettes for NES, Game Boy, and other retro systems alongside existing PICO-8",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Integrate palette selection with quantization",
+            "description": "Modify existing quantization code to work with user-selected palettes instead of hardcoded PICO-8",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Add user interface for palette management",
+            "description": "Create UI elements for palette selection, file upload, and direct palette input",
+            "status": "pending",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Threshold Matrix Generation",
+        "description": "Create Bayer matrix or custom threshold matrix for ordered dithering",
+        "details": "Implement generateBayerMatrix(size) -> 2D array. Create standard Bayer matrices (2x2, 4x4, 8x8). Normalize matrix values to 0-1 range. Support custom threshold matrices if provided. Reference implementation: Bayer matrix B_n = [B_(n-1) B_(n-1)+2^(2n-2); B_(n-1)+3*2^(2n-2) B_(n-1)+2^(2n-2)] starting with B_1 = [0 2; 3 1].",
+        "testStrategy": "Verify Bayer matrix generation produces correct patterns, test different matrix sizes, validate matrix values are properly normalized",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement Color Distance Calculation",
+        "description": "Create functions to calculate color distance for finding closest palette colors",
+        "details": "Implement euclideanDistance(color1, color2) -> float and optionally perceptualDistance(color1, color2) -> float using Delta E or weighted RGB. For Euclidean: sqrt((r1-r2)^2 + (g1-g2)^2 + (b1-b2)^2). For perceptual: use CIE76 Delta E or weighted RGB with factors (0.3*R + 0.59*G + 0.11*B). Include findClosestColor(targetColor, palette) -> paletteIndex.",
+        "testStrategy": "Test distance calculations with known color pairs, verify closest color selection accuracy, compare Euclidean vs perceptual results with sample colors",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement Yliluoma's Ordered Dithering Core",
+        "description": "Implement the main dithering algorithm following Yliluoma's method",
+        "details": "Implement ditherImage(inputImage, palette, thresholdMatrix) -> ditheredImage. For each pixel (x,y): get threshold from matrix[x % matrixSize][y % matrixSize], add threshold to pixel RGB values, find closest palette color, set output pixel. Follow Yliluoma's algorithm: threshold = (matrix_value - 0.5) * dither_strength, modified_color = original_color + threshold, output_color = closest_palette_color(modified_color).",
+        "testStrategy": "Test with reference images from Yliluoma's article, compare output quality visually and numerically, test with different threshold matrix sizes and palette sizes",
+        "priority": "high",
+        "dependencies": [
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement CLI Interface",
+        "description": "Create command-line interface for the dithering tool",
+        "details": "Create CLI with arguments: --input <image_path>, --output <output_path>, --palette <palette_file>, --matrix-size <size>, --format <png|jpeg>. Include help text and usage examples. Handle argument validation and provide meaningful error messages. Support both file-based and inline palette specification.",
+        "testStrategy": "Test CLI with various argument combinations, verify help text displays correctly, test error handling for missing/invalid arguments, validate file path handling",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3,
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement API Interface",
+        "description": "Create programmatic API for integration in other applications",
+        "details": "Create main API function: dither(inputPath, outputPath, palette, options). Options include: matrixSize, outputFormat, ditherStrength. Return success/error status and metadata. Include convenience functions for common use cases. Ensure API is well-documented with docstrings/JSDoc.",
+        "testStrategy": "Test API with various parameter combinations, verify return values and error handling, test integration with sample applications",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3,
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Add Comprehensive Test Suite",
+        "description": "Create unit tests and integration tests for all modules",
+        "details": "Create unit tests for: image I/O, palette handling, matrix generation, color distance, dithering core. Create integration tests for: CLI functionality, API usage, end-to-end workflows. Include test images and expected outputs. Use testing framework (pytest for Python, Jest for Node.js). Aim for >90% code coverage.",
+        "testStrategy": "Run all tests and verify they pass, check code coverage reports, test with various image sizes and palette configurations",
+        "priority": "medium",
+        "dependencies": [
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Create Examples and Documentation",
+        "description": "Develop usage examples and comprehensive documentation",
+        "details": "Create example scripts showing: basic CLI usage, API integration, custom palette creation. Include sample images and expected outputs. Write comprehensive README with installation, usage, and API documentation. Add inline code documentation. Create examples for common use cases (pixel art, retro graphics).",
+        "testStrategy": "Verify all examples run successfully, test documentation accuracy by following instructions step-by-step, validate sample outputs match expectations",
+        "priority": "low",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Implement Performance Optimization for Large Palettes",
+        "description": "Optimize palette color search using spatial data structures like kd-trees or other efficient nearest neighbor algorithms to improve performance when working with large custom palettes.",
+        "details": "Implement optimized color search algorithms to replace linear palette search for large palettes (>64 colors). Create a KdTree class or similar spatial data structure to organize palette colors in 3D RGB space. Implement buildPaletteIndex(palette) -> searchStructure and optimizedFindClosestColor(targetColor, searchStructure) -> paletteIndex. For kd-tree: recursively partition RGB space, balance tree for optimal search performance. Alternative approaches: use octree for RGB space partitioning or implement approximate nearest neighbor with LSH. Include fallback to linear search for small palettes (<16 colors) where overhead isn't justified. Benchmark performance improvements and provide configuration options for different optimization strategies. Consider memory usage vs speed tradeoffs.",
+        "testStrategy": "Benchmark performance with palettes of varying sizes (16, 64, 256, 1024+ colors), compare optimized vs linear search times, verify color matching accuracy remains identical, test memory usage with large palettes, validate performance improvements are significant (>2x speedup for 256+ color palettes)",
+        "status": "pending",
+        "dependencies": [
+          5,
+          6
+        ],
+        "priority": "high",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-30T14:10:53.527Z",
+      "updated": "2025-06-30T14:21:41.240Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

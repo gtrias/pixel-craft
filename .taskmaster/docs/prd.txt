@@ -1,0 +1,39 @@
+<context>
+# Overview  
+Implement a module that converts images to a reduced palette using Yliluoma's ordered dithering algorithm. This helps generate visually pleasing, animation-friendly dithered images for pixel art, games, or retro-style graphics.
+
+# Core Features  
+- Convert input images to a specified palette using Yliluoma's ordered dithering
+- Support arbitrary palettes (user-defined RGB arrays)
+- Input/output in common formats (PNG, JPEG)
+- Simple API or CLI for usage
+
+# User Experience  
+- User provides an image and a palette
+- Receives a dithered image as output
+- CLI or API usage for integration in pipelines
+</context>
+<PRD>
+# Technical Architecture  
+- Core dithering logic using a threshold matrix (Bayer or custom)
+- Closest color search (Euclidean or perceptual distance)
+- Optional: palette search optimization (kd-tree)
+- Use existing image libraries for I/O
+
+# Development Roadmap  
+- MVP: Basic dithering with user palette, PNG/JPEG support, CLI
+- Future: kd-tree optimization, animation support, more formats
+
+# Logical Dependency Chain
+- Implement palette input and image I/O
+- Implement dithering core
+- Implement CLI/API
+- Add tests and examples
+
+# Risks and Mitigations  
+- Risk: Output quality may not match reference; Mitigation: Compare with article examples and iterate
+- Risk: Performance with large palettes; Mitigation: Optimize with kd-tree if needed
+
+# Appendix  
+- Reference: https://bisqwit.iki.fi/story/howto/dither/jy/
+</PRD> 

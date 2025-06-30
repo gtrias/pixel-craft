@@ -25,3 +25,15 @@ dist-ssr
 
 # Ignored for the template, you probably want to remove it:
 package-lock.json
+
+dev-debug.log
+# Dependency directories
+node_modules/
+# Environment variables
+.env
+.vscode
+# OS specific
+
+# Task files
+# tasks.json
+# tasks/ 
